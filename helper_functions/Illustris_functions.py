@@ -32,13 +32,16 @@ def wrap_around(array, center, box_size):
     # Take input from an array and split it from the center value like  the COM, and join the old start and end.
     # Obtain box size from hdf5 file header
     # Center is usually calculated with the particle with the lowest potential, the center of the halo.
-    box_center = np.array([box_size, box_size, box_size]) / 2.0
-    shift = box_center - center
+    delta = array - center
+    delta = (delta + box_size / 2.0) % box_size - box_size / 2.0
+    return delta
+    # box_center = np.array([box_size, box_size, box_size]) / 2.0
+    # shift = box_center - center
 
-    array_shifted = (array + shift) % box_size
-    #print( array.min(), array_shifted.min(), center, box_center, shift )
+    # array_shifted = (array + shift) % box_size
+    # #print( array.min(), array_shifted.min(), center, box_center, shift )
 
-    return array_shifted
+    # return array_shifted
 
 def density_converter(density_array, flag):
     # Converts density from units of 10**10 (M_sun / h) / (ckpc/h) ** 3  to required units
@@ -94,10 +97,10 @@ def background_selector(flag):
         #plt.style.use('seaborn-v0_8-pastel')
 
 
-def median_binner(data_array, radius):
+def median_binner(data_array, radius, nbins = 100):
     
     # radius_bins = np.logspace(np.log10(radius.min() + 1e-3 ) , np.log10(radius.max()), 100) # Adding a 1e-3 to avoid log10(0)
-    radius_bins = np.logspace(np.log10( 5 ) , np.log10(radius.max()), 100) 
+    radius_bins = np.logspace(np.log10( 5 ) , np.log10(radius.max()), nbins) 
 
     stat_result = binned_statistic(
         radius,               
