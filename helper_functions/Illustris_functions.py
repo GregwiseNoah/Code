@@ -1,7 +1,7 @@
 import requests
 import h5py
 import numpy as np
-import matplotlib.pyplot as plt
+
 #import astropy.units as u
 import cmasher as cmr
 from scipy.stats import binned_statistic
@@ -89,13 +89,6 @@ def Temp_calculator( Part0dict ):
     return Temp
     
 
-
-def background_selector(flag):
-    if flag == 'dark':
-        plt.style.use('dark_background')
-    elif flag == 'light':
-        plt.style.use('default')
-        #plt.style.use('seaborn-v0_8-pastel')
 
 
 def median_binner(data_array, radius, nbins = 100):

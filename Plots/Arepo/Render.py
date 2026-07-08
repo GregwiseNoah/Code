@@ -10,13 +10,16 @@ from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
+'''
+
+VERY OLD CODE, NEEDS TO BE UPDATED
+
+'''
+
+
 cmap =cmr.ember
 time_conversion_factor = 3.08568e21 / 100000 * u.s
 
-
-######################################################
-## ONLY DENSITY HAS h CORRECTION FOR NOW DO NOT USE ##
-######################################################
 
 def video_maker_density(files, savefilename):
     # Parameters
