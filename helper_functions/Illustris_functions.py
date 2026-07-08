@@ -11,6 +11,7 @@ from scipy.stats import binned_statistic
 # Most of the comoving to proper unit conversion has a factor a missing since I am using a = 0 right now
 ##########################
 h = 0.704
+h_arepo = 0.6774
 msun_g = 1.989e33
 
 

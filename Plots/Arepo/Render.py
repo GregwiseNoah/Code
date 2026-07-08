@@ -13,11 +13,27 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 cmap =cmr.ember
 time_conversion_factor = 3.08568e21 / 100000 * u.s
 
+
+######################################################
+## ONLY DENSITY HAS h CORRECTION FOR NOW DO NOT USE ##
+######################################################
+
 def video_maker_density(files, savefilename):
     # Parameters
-    Nplotx = 256 
-    Nploty = 128
-    Boxsize = 3978 
+    Nplotx = 512 
+    Nploty = 256
+
+
+    with h5py.File(files[15], 'r') as init_file:
+        init_file = h5py.File(files[15], 'r')
+        h =  np.array(init_file['Header'].attrs['HubbleParam'], dtype=np.float64)
+        Boxsize = init_file['Parameters'].attrs['BoxSize'] * 1/h
+        VoronoiPos = np.array(init_file['PartType0']['Coordinates'], dtype=np.float64) / h
+        Density = np.array(init_file['PartType0']['Density'], dtype=np.float64) * 6.769898014440631e-31 * h**2
+    # dist, cells = spatial.KDTree(VoronoiPos[:]).query(Grid2D, k=1)
+    
+    # tree = spatial.KDTree(VoronoiPos)
+
     r_shock = 0.01 * Boxsize
     
     Edges1dx = np.linspace(0.5 * Boxsize - 1.3 * r_shock,
@@ -41,14 +57,7 @@ def video_maker_density(files, savefilename):
         np.ones(Nplotx*Nploty) * 0.5 * Boxsize
     ]).T
     
-    init_file = h5py.File(files[15], 'r')
-    VoronoiPos = np.array(init_file['PartType0']['Coordinates'], dtype=np.float64)
-    Density = np.array(init_file['PartType0']['Density'], dtype=np.float64) * 6.769898014440631e-31
     vmin, vmax = Density.min(), Density.max()
-    # dist, cells = spatial.KDTree(VoronoiPos[:]).query(Grid2D, k=1)
-    
-    # tree = spatial.KDTree(VoronoiPos)
-    init_file.close()
     
     # Plot setup
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -68,15 +77,13 @@ def video_maker_density(files, savefilename):
     
     
     def update_density(frame):
-        file = h5py.File(files[frame], 'r')
-        coords = file['PartType0']['Coordinates'][:]
-        density = file['PartType0']['Density'][:] * 6.769898014440631e-31
-        time = file['Header'].attrs['Time'] * time_conversion_factor.to(u.Myr)
-        
-        
-        #print(density.min(), density.max())
-    
-        file.close()
+        with h5py.File(files[frame], 'r') as file:
+            h =  np.array(init_file['Header'].attrs['HubbleParam'], dtype=np.float64)
+            coords = file['PartType0']['Coordinates'][:] * 1/h
+            density = file['PartType0']['Density'][:] * 6.769898014440631e-31 * h**2
+            time = file['Header'].attrs['Time'] * time_conversion_factor.to(u.Myr) * 1/h
+            
+
     
         tree = spatial.KDTree(coords)  # REBUILD TREE EACH FRAME
         _, nearest_cells = tree.query(Grid2D, k=1)
@@ -89,6 +96,7 @@ def video_maker_density(files, savefilename):
     ani = FuncAnimation(fig, update_density, frames=len(files))
     writer = FFMpegWriter(fps=5, bitrate=1800)
     ani.save(savefilename+".mp4", writer=writer)
+    ani.save(savefilename+'.gif', writer=writer, dpi=300)
     print("video saved")
 
 
